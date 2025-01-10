@@ -1,19 +1,38 @@
+import os
 import csv
 import numpy as np
 
-
 if __name__ == '__main__':
 	path = 'thetas.csv'
-	with open(path, 'r') as f:
-		reader = csv.reader(f)
-	data = list(reader)
-	data_array = np.array(data[1:], dtype = float)
-	theta1, theta2 = data_array[1][0], data_array[1][1]
-	mileage = input("Enter a mileage: ")
-	# if not isinstance(mileage, int):
-	# 	print("Please enter a correct value, float only are accepted")
-	# else:
-	price = theta1 * mileage + theta2
-	print(f"for a mileage of {mileage}km, the price estimated is {price}.")
 
-##add some prints
+	if not os.path.exists(path):
+		print(f"What have you done with the file '{path}'? it was right there !")
+	else:
+		try:
+			with open(path, 'r') as f:
+				reader = csv.reader(f)
+				data = list(reader)
+
+			if len(data) < 2 or len(data[1]) < 2:
+				raise ValueError("Ok, well now the 'thetas.csv' file is broken, well done...")
+
+			data_array = np.array(data[1:], dtype=float)
+			theta1, theta2 = data_array[0][1], data_array[0][0]
+
+			while True:
+				mileage = input("Enter a mileage: ")
+				try:
+					mileage = float(mileage)
+					if (mileage < 0):
+						print("I mean... you know this can't be right ? right ??")
+					else:
+						break
+				except ValueError:
+					print("Please enter a correct value, only numbers are accepted.")
+
+			price = theta1 * mileage + theta2
+			print(f"For a mileage of {mileage} km, the estimated price is {price}.")
+		except (OSError, ValueError, IndexError) as e:
+			print(f"Ahem, we encountered some weird error parsing the file: {e}")
+
+
