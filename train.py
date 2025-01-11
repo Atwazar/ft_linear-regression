@@ -8,7 +8,7 @@ class MyLinearRegression():
 		self.alpha = alpha
 		self.max_iter = max_iter
 		self.thetas = thetas
-		
+
 	def gradient_(self, x, y):
 		x = np.c_[np.ones(len(x)), x]
 		gradient = (np.dot(x.T, (np.dot(x, self.thetas) - y))) / len(x)
@@ -29,13 +29,13 @@ class MyLinearRegression():
 		ss_res = np.sum((y_true - y_pred) ** 2)
 		ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)
 		r2 = 1 - (ss_res / ss_tot)
-		
+
 		mse = np.mean((y_true - y_pred) ** 2)
-		
+
 		rmse = np.sqrt(mse)
-		
+
 		mae = np.mean(np.abs(y_true - y_pred))
-		
+
 		return {
 			'R2': r2,
 			'MSE': mse,
@@ -62,12 +62,10 @@ def denormalize_thetas(thetas, x_original, y_original):
 	return np.array([[theta0_denormalized], [theta1_denormalized]])
 
 
-def plot_graphs(x, y, thetas, MLR, x_original, y_original):
+def plot_graphs(thetas, MLR, x_original, y_original):
 	figure, axis = plt.subplots(figsize=(10, 6))
 
-	y_hat_normalized = MLR.predict_(x, thetas)
-
-	y_hat = denormalize_data(y_hat_normalized, y_original)
+	y_hat = MLR.predict_(x_original, thetas)
 
 	metrics = MLR.score_(y_original, y_hat)
 
@@ -126,26 +124,12 @@ if __name__ == '__main__':
 	x_normalized = normalize_data(x)
 	y_normalized = normalize_data(y)
 
-	if not os.path.exists(thetas_path):
-		print(f"What have you done with the file '{thetas_path}'? it was there like a second ago !")
-		exit(1)
-	try:
-		with open(thetas_path, 'r') as f:
-			reader = csv.reader(f)
-			data = list(reader)
-		if len(data) < 2 or len(data[1]) < 2:
-			raise ValueError("You've broken the file 'thetas_path', you can be proud")
-		data_array = np.array(data[1:], dtype=float)
-	except (OSError, ValueError, IndexError) as e:
-		print(f"We  had some weird error parsing '{thetas_path}', whatever you are doing, please stop: {e}")
-		exit(1)
-
 	thetas = np.array([[0], [0]])
 
 	MLR = MyLinearRegression(thetas)
 	thetas = MLR.fit_(x_normalized, y_normalized)
-
+	thetas_without_normalisation = MLR.fit_(x, y)
 	thetas_denormalized = denormalize_thetas(thetas, x, y)
 	update_thetas_file(thetas_denormalized, thetas_path)
 
-	plot_graphs(x_normalized, y_normalized, thetas, MLR, x, y)
+	plot_graphs(thetas_denormalized, MLR, x, y)
